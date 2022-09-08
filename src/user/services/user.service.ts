@@ -27,8 +27,8 @@ export class UserService {
         return await this.userRepository.save(user)
     }
 
-    async updateUser(userDto: UserDto, userId: number): Promise<User> {
-        const userToUpdate = await this.userRepository.findOneBy({ id: userId })
+    async updateUser(userDto: UserDto): Promise<User> {
+        const userToUpdate = await this.userRepository.findOneBy({ id: userDto.id })
         userToUpdate.username = userDto.username
         userToUpdate.password = userDto.password
 

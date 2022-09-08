@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
-import { ContactDto } from '../dto/contact-dto';
+import { ContactDto, UpdateContactDto } from '../dto/contact-dto';
 import { Contact } from '../entities/contact.entity';
 
 @Injectable()
@@ -21,41 +21,38 @@ export class ContactService {
 
     async getContactsByUserId(userId: number): Promise<Contact[]> {
         const relatedUser = await this.userRepository.findOneBy({ id: userId })
-        return await this.contactRepository.createQueryBuilder('contact').where({ user: relatedUser }).execute()
+
+        return await this.contactRepository.findBy({
+            user: relatedUser
+        })
     }
 
     async createContact(contactDto: ContactDto): Promise<Contact> {
-        const contact = new Contact()
-        const relatedUser = await this.userRepository.findOneBy({ id: contactDto.userId })
+        const relatedUser = await this.userRepository.findOneBy({ id: contactDto.user.id })
 
         if (!relatedUser) {
-            throw new Error(`Specified user id ${contactDto.userId} does not exist`)
+            throw new Error(`Specified user id ${contactDto.user.id} does not exist`)
         }
-        
-        contact.user = relatedUser
-        contact.name = contactDto.name
-        contact.lastName = contactDto.lastName
-        contact.status = contactDto.status
+        const createdContact = this.contactRepository.create(contactDto)
 
-        return await this.contactRepository.save(contact)
+        return await this.contactRepository.save(createdContact)
     }
 
-    async updateContact(contactDto: ContactDto): Promise<Contact> {
-        const contactToUpdate = await this.contactRepository.findOneBy({ id: contactDto.id })
-        const relatedUser = await this.userRepository.findOneBy({ id: contactDto.userId })
+    async updateContact(contactId: number, contactDto: UpdateContactDto): Promise<Contact> {
+
+        const contactToUpdate = await this.contactRepository.findOneBy({ id: contactId })
+
+        const relatedUser = await this.userRepository.findOneBy({ id: contactDto.user.id })
 
         if (!contactToUpdate) {
             throw new Error(`Specified contact (id: ${contactDto.id}) was not found`)
         }
 
         if (!relatedUser) {
-            throw new Error(`Specified user (userId: ${contactDto.userId}) was not found`)
+            throw new Error(`Specified user (userId: ${contactDto.user.id}) was not found`)
         }
 
-        contactToUpdate.user = relatedUser
-        contactToUpdate.name = contactDto.name
-        contactToUpdate.lastName = contactDto.lastName
-        contactToUpdate.status = contactDto.status
+        this.contactRepository.merge(contactToUpdate, contactDto)
 
         return await this.contactRepository.save(contactToUpdate)
     }

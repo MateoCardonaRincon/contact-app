@@ -1,5 +1,6 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, Post, Put, Res } from '@nestjs/common';
-import { ContactDto } from '../dto/contact-dto';
+import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, Res } from '@nestjs/common';
+import { ContactDto, UpdateContactDto } from '../dto/contact-dto';
+import { Contact } from '../entities/contact.entity';
 import { ContactService } from '../services/contact.service';
 
 @Controller('contact')
@@ -8,62 +9,62 @@ export class ContactController {
     constructor(private contactService: ContactService) { }
 
     @Post('save')
-    createContact(@Body() contactDto: ContactDto, @Res() response) {
-        this.contactService.createContact(contactDto)
-            .then((contact) => {
-                response.status(HttpStatus.CREATED).json(contact);
-            })
-            .catch((error) => {
-                response.status(HttpStatus.BAD_REQUEST).json({ errorMessage: error.message });
-            })
+    createContact(@Body() contactDto: ContactDto, @Res({ passthrough: true }) response) {
+
+        try {
+            response.status(HttpStatus.OK)
+            return this.contactService.createContact(contactDto)
+        } catch (error) {
+            response.status(HttpStatus.BAD_REQUEST)
+            return { message: error.message, trace: error }
+        }
     }
 
     @Get('get/:id')
-    getContactById(@Param('id') contactId: number, @Res() response) {
-        this.contactService.getContactById(contactId)
-            .then((contact) => {
-                if (!contact) {
-                    throw new Error(`Something went wrong getting the contact with id ${contactId}`)
-                }
-                response.status(HttpStatus.OK).json(contact);
-            })
-            .catch((error) => {
-                response.status(HttpStatus.BAD_REQUEST).json({ errorMessage: error.message });
-            })
+    getContactById(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
+
+        try {
+            response.status(HttpStatus.OK)
+            return this.contactService.getContactById(contactId)
+        } catch (error) {
+            response.status(HttpStatus.BAD_REQUEST)
+            return { message: error.message, trace: error }
+        }
     }
 
 
     @Get('get/by-user/:userId')
-    getContactsByUserId(@Param('userId') userId: number, @Res() response) {
-        this.contactService.getContactsByUserId(userId)
-            .then((contacts) => {
-                response.status(HttpStatus.OK).json(contacts);
-            })
-            .catch((error) => {
-                response.status(HttpStatus.BAD_REQUEST).json({ errorMessage: error.message });
-            })
+    getContactsByUserId(@Param('userId') userId: number, @Res({ passthrough: true }) response) {
+
+        try {
+            response.status(HttpStatus.OK)
+            return this.contactService.getContactsByUserId(userId)
+        } catch (error) {
+            response.status(HttpStatus.BAD_REQUEST)
+            return { message: error.message, trace: error }
+        }
     }
 
-    @Put('update')
-    updateContact(@Body() contactDto: ContactDto, @Res() response) {
-        this.contactService.updateContact(contactDto)
-            .then((contact) => {
-                response.status(HttpStatus.OK).json(contact);
-            })
-            .catch((error) => {
-                response.status(HttpStatus.BAD_REQUEST).json({ errorMessage: error.message });
-            })
+    @Put('update/:id')
+    updateContact(@Param('id') id: number, @Body() contactDto: UpdateContactDto, @Res({ passthrough: true }) response) {
+        try {
+            response.status(HttpStatus.OK)
+            return this.contactService.updateContact(id, contactDto)
+        } catch (error) {
+            response.status(HttpStatus.BAD_REQUEST)
+            return { message: error.message, trace: error }
+        }
     }
 
     @Delete('delete/:id')
-    deleteContact(@Param('id') contactId: number, @Res() response) {
-        this.contactService.deleteContact(contactId)
-            .then((res) => {
-                response.status(HttpStatus.OK).json(res);
-            })
-            .catch((error) => {
-                response.status(HttpStatus.BAD_REQUEST).json({ errorMessage: error.message });
-            })
+    deleteContact(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
+        try {
+            response.status(HttpStatus.OK)
+            return this.contactService.deleteContact(contactId)
+        } catch (error) {
+            response.status(HttpStatus.BAD_REQUEST)
+            return { message: error.message, trace: error }
+        }
     }
 
 }

@@ -44,13 +44,14 @@ export class UserController {
     }
 
     @Put('update/:id')
-    updateUser(@Body() userDto: UserDto, @Param('id') userId: number, @Res() response) {
-        this.userService.updateUser(userDto, userId)
+    updateUser(@Body() userDto: UserDto, @Res() response) {
+        this.userService.updateUser(userDto)
             .then((user) => {
                 response.status(HttpStatus.OK).json(user);
             })
             .catch(() => {
-                response.status(HttpStatus.BAD_REQUEST).json({ errorMessage: `Something went wrong updating the user with id ${userId}` });
+                response.status(HttpStatus.BAD_REQUEST)
+                    .json({ errorMessage: `Something went wrong updating the user with id ${userDto.id}` });
             })
     }
 
