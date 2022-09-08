@@ -1,20 +1,23 @@
 import { User } from "src/user/entities/user.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Contact {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(type => User)
+    @ManyToOne(() => User, (user) => user.id, {
+        cascade: true,
+        eager: true
+    })
     user: User
 
-    @Column("varchar", { length: 80 })
+    @Column({ type: "varchar", length: 80 })
     name: string;
 
-    @Column("varchar", { length: 80 })
+    @Column({ type: "varchar", length: 80, nullable: true })
     lastName: string;
 
-    @Column("boolean")
+    @Column()
     status: boolean;
 }
