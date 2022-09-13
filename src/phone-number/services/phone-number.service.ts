@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { throwIfEmpty } from 'rxjs';
 import { Contact } from 'src/contact/entities/contact.entity';
@@ -18,7 +18,9 @@ export class PhoneNumberService {
 
     async createPhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
         try {
-            await this.contactRepository.findOneBy({ id: phoneNumberDto.contact.id })
+            delete phoneNumberDto.id
+
+            await this.contactRepository.findOneByOrFail({ id: phoneNumberDto.contact.id })
 
             const createdPhoneNumber = this.phoneNumberRepository.create(phoneNumberDto)
 
@@ -56,15 +58,23 @@ export class PhoneNumberService {
     }
 
     async updatePhoneNumber(phoneNumberId: number, phoneNumberDto: UpdatePhoneNumberDto): Promise<PhoneNumber> {
-        try {
-            const phoneNumberToUpdate = await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
+        delete phoneNumberDto.contact
 
-            this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
+        const phoneNumberToUpdate = await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
 
-            return await this.phoneNumberRepository.save(phoneNumberToUpdate)
-        } catch (error) {
+        if (!phoneNumberToUpdate) {
             throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} was not found`)
         }
+
+        if (phoneNumberDto.id && phoneNumberDto.id !== phoneNumberId) {
+            throw new BadRequestException(
+                `The phone number id sent through the request body must match with the phone number id sent through the request path.`
+            )
+        }
+
+        this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
+
+        return await this.phoneNumberRepository.save(phoneNumberToUpdate)
     }
 
     async deletePhoneNumber(phoneNumberId: number): Promise<any> {

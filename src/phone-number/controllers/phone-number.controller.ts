@@ -8,68 +8,32 @@ export class PhoneNumberController {
     constructor(private readonly phoneNumberService: PhoneNumberService) { }
 
     @Post('save')
-    async createPhoneNumber(@Body() phoneNumberDto: PhoneNumberDto, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.CREATED)
-            return await this.phoneNumberService.createPhoneNumber(phoneNumberDto)
-        } catch (error) {
-            response.status(HttpStatus.NOT_ACCEPTABLE)
-            return { message: error.message, trace: error }
-        }
+    async createPhoneNumber(@Body() phoneNumberDto: PhoneNumberDto) {
+        return await this.phoneNumberService.createPhoneNumber(phoneNumberDto)
     }
 
     @Get('all')
-    async getAllPhoneNumbers(@Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.OK)
-            return await this.phoneNumberService.getAll()
-        } catch (error) {
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            return { message: error.message, trace: error }
-        }
+    async getAllPhoneNumbers() {
+        return await this.phoneNumberService.getAll()
     }
 
     @Get('get/:id')
-    async getPhoneNumberById(@Param('id', ParseIntPipe) phoneNumberId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.FOUND)
-            return await this.phoneNumberService.getPhoneNumberById(phoneNumberId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async getPhoneNumberById(@Param('id', ParseIntPipe) phoneNumberId: number) {
+        return await this.phoneNumberService.getPhoneNumberById(phoneNumberId)
     }
 
     @Get('get/by-contact/:contactId')
-    async getAllByContactId(@Param('contactId', ParseIntPipe) contactId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.FOUND)
-            return await this.phoneNumberService.getAllByContactId(contactId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async getAllByContactId(@Param('contactId', ParseIntPipe) contactId: number) {
+        return await this.phoneNumberService.getAllByContactId(contactId)
     }
 
     @Put('update/:id')
-    async updatePhoneNumber(@Param('id', ParseIntPipe) id: number, @Body() phoneNumberDto: UpdatePhoneNumberDto, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.ACCEPTED)
-            return await this.phoneNumberService.updatePhoneNumber(id, phoneNumberDto)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async updatePhoneNumber(@Param('id', ParseIntPipe) id: number, @Body() phoneNumberDto: UpdatePhoneNumberDto) {
+        return await this.phoneNumberService.updatePhoneNumber(id, phoneNumberDto)
     }
 
     @Delete('delete/:id')
-    async deletePhoneNumber(@Param('id', ParseIntPipe) phoneNumberId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.OK)
-            return await this.phoneNumberService.deletePhoneNumber(phoneNumberId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async deletePhoneNumber(@Param('id', ParseIntPipe) phoneNumberId: number) {
+        return await this.phoneNumberService.deletePhoneNumber(phoneNumberId)
     }
 }

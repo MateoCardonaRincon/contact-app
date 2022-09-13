@@ -8,70 +8,34 @@ export class ContactController {
     constructor(private readonly contactService: ContactService) { }
 
     @Post('save')
-    async createContact(@Body() contactDto: ContactDto, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.CREATED)
-            return await this.contactService.createContact(contactDto)
-        } catch (error) {
-            response.status(HttpStatus.NOT_ACCEPTABLE)
-            return { message: error.message, trace: error }
-        }
+    async createContact(@Body() contactDto: ContactDto) {
+        return await this.contactService.createContact(contactDto)
     }
 
     @Get('all')
-    async getAllContacts(@Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.OK)
-            return await this.contactService.getAll()
-        } catch (error) {
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            return { message: error.message, trace: error }
-        }
+    async getAllContacts() {
+        return await this.contactService.getAll()
     }
 
     @Get('get/:id')
-    async getContactById(@Param('id', ParseIntPipe) contactId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.FOUND)
-            return await this.contactService.getContactById(contactId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async getContactById(@Param('id', ParseIntPipe) contactId: number) {
+        return await this.contactService.getContactById(contactId)
     }
 
 
     @Get('get/by-user/:userId')
-    async getContactsByUserId(@Param('userId', ParseIntPipe) userId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.FOUND)
-            return await this.contactService.getContactsByUserId(userId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async getContactsByUserId(@Param('userId', ParseIntPipe) userId: number) {
+        return await this.contactService.getContactsByUserId(userId)
     }
 
     @Put('update/:id')
-    async updateContact(@Param('id', ParseIntPipe) id: number, @Body() contactDto: UpdateContactDto, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.ACCEPTED)
-            return await this.contactService.updateContact(id, contactDto)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async updateContact(@Param('id', ParseIntPipe) id: number, @Body() contactDto: UpdateContactDto) {
+        return await this.contactService.updateContact(id, contactDto)
     }
 
     @Delete('delete/:id')
-    async deleteContact(@Param('id', ParseIntPipe) contactId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.OK)
-            return await this.contactService.deleteContact(contactId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async deleteContact(@Param('id', ParseIntPipe) contactId: number) {
+        return await this.contactService.deleteContact(contactId)
     }
 
 }

@@ -13,6 +13,8 @@ export class UserService {
 
     async createUser(userDto: UserDto): Promise<User> {
         try {
+            delete userDto.id
+            
             const createUser = this.userRepository.create(userDto)
 
             return await this.userRepository.save(createUser)
@@ -39,15 +41,21 @@ export class UserService {
     }
 
     async updateUser(userId: number, userDto: UpdateUserDto): Promise<User> {
-        try {
-            const userToUpdate = await this.userRepository.findOneByOrFail({ id: userId })
+            const userToUpdate = await this.userRepository.findOneBy({ id: userId })
+
+            if(!userToUpdate){
+                throw new NotFoundException(`Specified user {id: ${userId}} was not found`)
+            }
+
+            if (userDto.id && userDto.id !== userId) {
+                throw new BadRequestException(
+                    `The user id sent through the request body must match with the user id sent through the request path.`
+                )
+            }
 
             this.userRepository.merge(userToUpdate, userDto)
 
             return await this.userRepository.save(userToUpdate)
-        } catch (error) {
-            throw new NotFoundException(`Specified user {id: ${userId}} was not found`)
-        }
     }
 
     async deleteUser(userId: number): Promise<any> {

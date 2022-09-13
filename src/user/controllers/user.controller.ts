@@ -8,57 +8,27 @@ export class UserController {
     constructor(private readonly userService: UserService) { }
 
     @Post('save')
-    async createUser(@Body() userDto: UserDto, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.CREATED)
-            return await this.userService.createUser(userDto)
-        } catch (error) {
-            response.status(HttpStatus.NOT_ACCEPTABLE)
-            return { message: error.message, trace: error }
-        }
+    async createUser(@Body() userDto: UserDto) {
+        return await this.userService.createUser(userDto)
     }
 
     @Get('all')
-    async getAllUsers(@Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.OK)
-            return await this.userService.getAll()
-        } catch (error) {
-            response.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            return { message: error.message, trace: error }
-        }
+    async getAllUsers() {
+        return await this.userService.getAll()
     }
 
     @Get('get/:id')
-    async getUserById(@Param('id', ParseIntPipe) userId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.FOUND)
-            return await this.userService.getUserById(userId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async getUserById(@Param('id', ParseIntPipe) userId: number) {
+        return await this.userService.getUserById(userId)
     }
 
     @Put('update/:id')
-    async updateUser(@Param('id', ParseIntPipe) id: number, @Body() userDto: UpdateUserDto, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.ACCEPTED)
-            return await this.userService.updateUser(id, userDto)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async updateUser(@Param('id', ParseIntPipe) id: number, @Body() userDto: UpdateUserDto) {
+        return await this.userService.updateUser(id, userDto)
     }
 
     @Delete('delete/:id')
-    async deleteUser(@Param('id', ParseIntPipe) userId: number, @Res({ passthrough: true }) response) {
-        try {
-            response.status(HttpStatus.OK)
-            return await this.userService.deleteUser(userId)
-        } catch (error) {
-            response.status(HttpStatus.NOT_FOUND)
-            return { message: error.message, trace: error }
-        }
+    async deleteUser(@Param('id', ParseIntPipe) userId: number) {
+        return await this.userService.deleteUser(userId)
     }
 }

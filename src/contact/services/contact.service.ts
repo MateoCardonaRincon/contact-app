@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -17,6 +17,8 @@ export class ContactService {
 
     async createContact(contactDto: ContactDto): Promise<Contact> {
         try {
+            delete contactDto.id
+
             await this.userRepository.findOneByOrFail({ id: contactDto.user.id })
 
             const createdContact = this.contactRepository.create(contactDto)
@@ -55,15 +57,23 @@ export class ContactService {
     }
 
     async updateContact(contactId: number, contactDto: UpdateContactDto): Promise<Contact> {
-        try {
-            const contactToUpdate = await this.contactRepository.findOneByOrFail({ id: contactId })
+        delete contactDto.user
 
-            this.contactRepository.merge(contactToUpdate, contactDto)
+        const contactToUpdate = await this.contactRepository.findOneBy({ id: contactId })
 
-            return await this.contactRepository.save(contactToUpdate)
-        } catch (error) {
+        if (!contactToUpdate) {
             throw new NotFoundException(`Specified contact {id: ${contactId}} was not found`)
         }
+
+        if (contactDto.id && contactDto.id !== contactId) {
+            throw new BadRequestException(
+                `The contact id sent through the request body must match with the contact id sent through the request path.`
+            )
+        }
+
+        this.contactRepository.merge(contactToUpdate, contactDto)
+
+        return await this.contactRepository.save(contactToUpdate)
     }
 
     async deleteContact(contactId: number): Promise<any> {
