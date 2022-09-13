@@ -9,58 +9,66 @@ export class ContactController {
     constructor(private contactService: ContactService) { }
 
     @Post('save')
-    createContact(@Body() contactDto: ContactDto, @Res({ passthrough: true }) response) {
+    async createContact(@Body() contactDto: ContactDto, @Res({ passthrough: true }) response) {
+        try {
+            response.status(HttpStatus.CREATED)
+            return await this.contactService.createContact(contactDto)
+        } catch (error) {
+            response.status(HttpStatus.NOT_ACCEPTABLE)
+            return { message: error.message, trace: error }
+        }
+    }
 
+    @Get('all')
+    async getAllContacts(@Res({ passthrough: true }) response) {
         try {
             response.status(HttpStatus.OK)
-            return this.contactService.createContact(contactDto)
+            return await this.contactService.getAll()
         } catch (error) {
-            response.status(HttpStatus.BAD_REQUEST)
+            response.status(HttpStatus.NO_CONTENT)
             return { message: error.message, trace: error }
         }
     }
 
     @Get('get/:id')
-    getContactById(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
-
+    async getContactById(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
         try {
-            response.status(HttpStatus.OK)
-            return this.contactService.getContactById(contactId)
+            response.status(HttpStatus.FOUND)
+            return await this.contactService.getContactById(contactId)
         } catch (error) {
-            response.status(HttpStatus.BAD_REQUEST)
+            response.status(HttpStatus.NOT_FOUND)
             return { message: error.message, trace: error }
         }
     }
 
 
     @Get('get/by-user/:userId')
-    getContactsByUserId(@Param('userId') userId: number, @Res({ passthrough: true }) response) {
-
+    async getContactsByUserId(@Param('userId') userId: number, @Res({ passthrough: true }) response) {
         try {
-            response.status(HttpStatus.OK)
-            return this.contactService.getContactsByUserId(userId)
+            response.status(HttpStatus.FOUND)
+            return await this.contactService.getContactsByUserId(userId)
         } catch (error) {
-            response.status(HttpStatus.BAD_REQUEST)
+            response.status(HttpStatus.NOT_FOUND)
             return { message: error.message, trace: error }
         }
     }
 
     @Put('update/:id')
-    updateContact(@Param('id') id: number, @Body() contactDto: UpdateContactDto, @Res({ passthrough: true }) response) {
+    async updateContact(@Param('id') id: number, @Body() contactDto: UpdateContactDto, @Res({ passthrough: true }) response) {
         try {
-            response.status(HttpStatus.OK)
-            return this.contactService.updateContact(id, contactDto)
+            response.status(HttpStatus.ACCEPTED)
+            return await this.contactService.updateContact(id, contactDto)
         } catch (error) {
-            response.status(HttpStatus.BAD_REQUEST)
+            response.status(HttpStatus.NOT_ACCEPTABLE)
             return { message: error.message, trace: error }
         }
     }
 
     @Delete('delete/:id')
-    deleteContact(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
+    async deleteContact(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
         try {
             response.status(HttpStatus.OK)
-            return this.contactService.deleteContact(contactId)
+            return await this.contactService.deleteContact(contactId)
         } catch (error) {
             response.status(HttpStatus.BAD_REQUEST)
             return { message: error.message, trace: error }

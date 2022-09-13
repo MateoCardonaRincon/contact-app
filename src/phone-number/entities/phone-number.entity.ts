@@ -6,13 +6,10 @@ export class PhoneNumber {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToOne(() => Contact, (contact) => contact.id, {
-        cascade: true,
-        eager: true
-    })
-    contact: Contact
-
-    @Column({ type: "varchar", length: 80 })
+    @Column({ type: "varchar"})
     phoneNumber: string;
+
+    @ManyToOne(() => Contact, (contact) => contact.id, { onDelete: 'CASCADE' })
+    contact: Contact
 
 }

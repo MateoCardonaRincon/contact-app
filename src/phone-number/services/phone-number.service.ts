@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { throwIfEmpty } from 'rxjs';
 import { Contact } from 'src/contact/entities/contact.entity';
 import { Repository } from 'typeorm';
-import { PhoneNumberDto } from '../dto/phone-number-dto';
+import { PhoneNumberDto, UpdatePhoneNumberDto } from '../dto/phone-number-dto';
 import { PhoneNumber } from '../entities/phone-number.entity';
 
 @Injectable()
@@ -15,43 +16,49 @@ export class PhoneNumberService {
         private contactRepository: Repository<Contact>,
     ) { }
 
+    async createPhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
+        const relatedContact = await this.contactRepository.findOneBy({ id: phoneNumberDto.contact.id })
+
+        if (!relatedContact) {
+            throw new Error(`Specified contact {id: ${phoneNumberDto.contact.id}} does not exist`)
+        }
+
+        const createdPhoneNumber = this.phoneNumberRepository.create(phoneNumberDto)
+
+        return await this.phoneNumberRepository.save(createdPhoneNumber)
+    }
+
+    async getAll(): Promise<PhoneNumber[]> {
+        return await this.phoneNumberRepository.find()
+    }
+
     async getPhoneNumberById(phoneNumberId: number): Promise<PhoneNumber> {
-        return await this.phoneNumberRepository.findOneBy({ id: phoneNumberId })
+        try {
+            return await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
+        } catch (error) {
+            throw new Error(`Specified phone number {id: ${phoneNumberId}} does not exist`)
+        }
     }
 
     async getAllByContactId(contactId: number): Promise<PhoneNumber[]> {
-        const relatedContact = await this.contactRepository.findOneBy({ id: contactId })
-        return await this.phoneNumberRepository.createQueryBuilder('phoneNumber').where({ contact: relatedContact }).execute()
-    }
-
-    async createPhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
-        const phoneNumber = new PhoneNumber()
-        const relatedContact = await this.contactRepository.findOneBy({ id: phoneNumberDto.contactId })
-
-        if (!relatedContact) {
-            throw new Error(`Specified contact id ${phoneNumberDto.contactId} does not exist`)
+        try {
+            const relatedContact = await this.contactRepository.findOneByOrFail({ id: contactId })
+            return await this.phoneNumberRepository.findBy({
+                contact: relatedContact
+            })
+        } catch (error) {
+            throw new Error(`Specified contact {id: ${contactId}} does not exist`)
         }
-
-        phoneNumber.contact = relatedContact
-        phoneNumber.phoneNumber = phoneNumberDto.phoneNumber
-
-        return await this.phoneNumberRepository.save(phoneNumber)
     }
 
-    async updatePhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
-        const phoneNumberToUpdate = await this.phoneNumberRepository.findOneBy({ id: phoneNumberDto.id })
-        const relatedContact = await this.contactRepository.findOneBy({ id: phoneNumberDto.contactId })
+    async updatePhoneNumber(phoneNumberId: number, phoneNumberDto: UpdatePhoneNumberDto): Promise<PhoneNumber> {
+        const phoneNumberToUpdate = await this.phoneNumberRepository.findOneBy({ id: phoneNumberId })
 
         if (!phoneNumberToUpdate) {
-            throw new Error(`Specified phone number (id: ${phoneNumberDto.id}) was not found`)
+            throw new Error(`Specified phone number {id: ${phoneNumberId}} was not found`)
         }
 
-        if (!relatedContact) {
-            throw new Error(`Specified contact (userId: ${phoneNumberDto.contactId}) was not found`)
-        }
-
-        phoneNumberToUpdate.contact = relatedContact
-        phoneNumberToUpdate.phoneNumber = phoneNumberDto.phoneNumber
+        this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
 
         return await this.phoneNumberRepository.save(phoneNumberToUpdate)
     }

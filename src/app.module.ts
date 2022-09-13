@@ -11,16 +11,17 @@ import { PhoneNumber } from './phone-number/entities/phone-number.entity';
 import { UserService } from './user/services/user.service';
 import { ContactService } from './contact/services/contact.service';
 import { PhoneNumberService } from './phone-number/services/phone-number.service';
+require("dotenv").config()
 
 @Module({
   imports: [
     TypeOrmModule.forRoot({
       type: 'mysql',
-      host: 'localhost',
-      port: 3306,
-      username: 'root',
-      password: 'MySQL_315660',
-      database: 'contact-app',
+      host: process.env.DB_HOST,
+      port: +process.env.DB_PORT,
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_NAME,
       entities: [User, Contact, PhoneNumber],
       synchronize: true,
     }),

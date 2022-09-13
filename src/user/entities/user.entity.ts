@@ -1,17 +1,18 @@
 import { Contact } from "src/contact/entities/contact.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: "varchar", length: 80 })
+    @Column({ type: "varchar"})
     username: string;
 
-    @Column({ type: "varchar", length: 80 })
+    @Column({ type: "varchar"})
     password: string;
 
-    @OneToMany(type => Contact, contact => contact.user)
-    contacts: Contact[];  
+    @OneToMany(() => Contact, contact => contact.user, { cascade: ["remove"], eager: true })
+    @JoinColumn()
+    contacts: Contact[];
 }
