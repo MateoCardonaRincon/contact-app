@@ -1,7 +1,8 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException, UseFilters } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { compareSync, hashSync } from 'bcrypt';
 import { Repository } from 'typeorm';
-import { UpdateUserDto, UserDto } from '../dto/user-dto';
+import { UpdateUserDto, UserDto } from '../dtos';
 import { User } from '../entities/user.entity';
 
 @Injectable()
@@ -13,14 +14,34 @@ export class UserService {
 
     async createUser(userDto: UserDto): Promise<User> {
         try {
-            delete userDto.id
-            
-            const createUser = this.userRepository.create(userDto)
+            const { password, username } = userDto
+
+            const createUser = this.userRepository.create({ username, password: hashSync(password, 10) });
 
             return await this.userRepository.save(createUser)
         } catch (error) {
             throw new NotAcceptableException(error)
         }
+    }
+
+    async loginUser(userDto: UserDto) {
+
+        const { password, username } = userDto
+
+        const user = await this.userRepository.findOne({
+            where: { username }
+        },)
+
+        if (!user) {
+            throw new UnauthorizedException("Not valid credentials (username)")
+        }
+
+        if (!compareSync(password, user.password)) {
+            throw new UnauthorizedException("Not valid credentials (password)")
+        }
+
+        return user
+
     }
 
     async getAll(): Promise<User[]> {
@@ -37,25 +58,20 @@ export class UserService {
         } catch (error) {
             throw new NotFoundException(`Specified user {id: ${userId}} does not exist`)
         }
-
     }
 
     async updateUser(userId: number, userDto: UpdateUserDto): Promise<User> {
-            const userToUpdate = await this.userRepository.findOneBy({ id: userId })
+        const userToUpdate = await this.userRepository.findOneBy({ id: userId })
 
-            if(!userToUpdate){
-                throw new NotFoundException(`Specified user {id: ${userId}} was not found`)
-            }
+        if (!userToUpdate) {
+            throw new NotFoundException(`Specified user {id: ${userId}} was not found`)
+        }
 
-            if (userDto.id && userDto.id !== userId) {
-                throw new BadRequestException(
-                    `The user id sent through the request body must match with the user id sent through the request path.`
-                )
-            }
+        userDto.password = hashSync(userDto.password, 10)
 
-            this.userRepository.merge(userToUpdate, userDto)
+        this.userRepository.merge(userToUpdate, userDto)
 
-            return await this.userRepository.save(userToUpdate)
+        return await this.userRepository.save(userToUpdate)
     }
 
     async deleteUser(userId: number): Promise<any> {

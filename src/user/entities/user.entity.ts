@@ -6,10 +6,10 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: "varchar"})
+    @Column({ type: "varchar", unique: true })
     username: string;
 
-    @Column({ type: "varchar"})
+    @Column({ type: "varchar" })
     password: string;
 
     @OneToMany(() => Contact, contact => contact.user, { cascade: ["remove"], eager: true })

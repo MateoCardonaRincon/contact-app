@@ -1,9 +1,6 @@
-import { PartialType } from "@nestjs/mapped-types";
 import { IsNotEmpty, Length, MaxLength, MinLength } from "class-validator";
 
 export class UserDto {
-    
-    id?: number;
 
     @IsNotEmpty({
         message: "'username' property is required."
@@ -21,5 +18,3 @@ export class UserDto {
     })
     password: string;
 }
-
-export class UpdateUserDto extends PartialType(UserDto) { }
