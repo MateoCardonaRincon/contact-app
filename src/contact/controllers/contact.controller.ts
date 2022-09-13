@@ -1,12 +1,11 @@
 import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, Res } from '@nestjs/common';
 import { ContactDto, UpdateContactDto } from '../dto/contact-dto';
-import { Contact } from '../entities/contact.entity';
 import { ContactService } from '../services/contact.service';
 
 @Controller('contact')
 export class ContactController {
 
-    constructor(private contactService: ContactService) { }
+    constructor(private readonly contactService: ContactService) { }
 
     @Post('save')
     async createContact(@Body() contactDto: ContactDto, @Res({ passthrough: true }) response) {
@@ -25,13 +24,13 @@ export class ContactController {
             response.status(HttpStatus.OK)
             return await this.contactService.getAll()
         } catch (error) {
-            response.status(HttpStatus.NO_CONTENT)
+            response.status(HttpStatus.INTERNAL_SERVER_ERROR)
             return { message: error.message, trace: error }
         }
     }
 
     @Get('get/:id')
-    async getContactById(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
+    async getContactById(@Param('id', ParseIntPipe) contactId: number, @Res({ passthrough: true }) response) {
         try {
             response.status(HttpStatus.FOUND)
             return await this.contactService.getContactById(contactId)
@@ -43,7 +42,7 @@ export class ContactController {
 
 
     @Get('get/by-user/:userId')
-    async getContactsByUserId(@Param('userId') userId: number, @Res({ passthrough: true }) response) {
+    async getContactsByUserId(@Param('userId', ParseIntPipe) userId: number, @Res({ passthrough: true }) response) {
         try {
             response.status(HttpStatus.FOUND)
             return await this.contactService.getContactsByUserId(userId)
@@ -54,23 +53,23 @@ export class ContactController {
     }
 
     @Put('update/:id')
-    async updateContact(@Param('id') id: number, @Body() contactDto: UpdateContactDto, @Res({ passthrough: true }) response) {
+    async updateContact(@Param('id', ParseIntPipe) id: number, @Body() contactDto: UpdateContactDto, @Res({ passthrough: true }) response) {
         try {
             response.status(HttpStatus.ACCEPTED)
             return await this.contactService.updateContact(id, contactDto)
         } catch (error) {
-            response.status(HttpStatus.NOT_ACCEPTABLE)
+            response.status(HttpStatus.NOT_FOUND)
             return { message: error.message, trace: error }
         }
     }
 
     @Delete('delete/:id')
-    async deleteContact(@Param('id') contactId: number, @Res({ passthrough: true }) response) {
+    async deleteContact(@Param('id', ParseIntPipe) contactId: number, @Res({ passthrough: true }) response) {
         try {
             response.status(HttpStatus.OK)
             return await this.contactService.deleteContact(contactId)
         } catch (error) {
-            response.status(HttpStatus.BAD_REQUEST)
+            response.status(HttpStatus.NOT_FOUND)
             return { message: error.message, trace: error }
         }
     }

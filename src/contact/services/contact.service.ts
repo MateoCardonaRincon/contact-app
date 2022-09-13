@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -16,47 +16,41 @@ export class ContactService {
     ) { }
 
     async createContact(contactDto: ContactDto): Promise<Contact> {
+        try {
+            await this.userRepository.findOneByOrFail({ id: contactDto.user.id })
 
-        const relatedUser = await this.userRepository.findOneBy({ id: contactDto.user.id })
+            const createdContact = this.contactRepository.create(contactDto)
 
-        if (!relatedUser) {
-            throw new Error(`Specified user {id: ${contactDto.user.id}} does not exist`)
+            return await this.contactRepository.save(createdContact)
+        } catch (error) {
+            throw new NotAcceptableException(`Specified user {id: ${contactDto.user.id}} does not exist`)
         }
-
-        const createdContact = this.contactRepository.create(contactDto)
-
-        return await this.contactRepository.save(createdContact)
-        // try {
-        //     await this.userRepository.findOneByOrFail({ id: contactDto.user.id })
-
-        //     const createdContact = this.contactRepository.create(contactDto)
-
-        //     return await this.contactRepository.save(createdContact)
-        // } catch (error) {
-        //     throw new Error(`Specified user {id: ${contactDto.user.id}} does not exist`)
-        // }
     }
 
     async getAll(): Promise<Contact[]> {
-        return await this.contactRepository.find()
+        try {
+            return await this.contactRepository.find()
+        } catch (error) {
+            throw new InternalServerErrorException(error)
+        }
     }
 
     async getContactById(contactId: number): Promise<Contact> {
         try {
             return await this.contactRepository.findOneByOrFail({ id: contactId })
         } catch (error) {
-            throw new Error(`Specified contact {id: ${contactId}} does not exist`)
+            throw new NotFoundException(error`Specified contact {id: ${contactId}} does not exist`)
         }
     }
 
     async getContactsByUserId(userId: number): Promise<Contact[]> {
         try {
-            const relatedUser = await this.userRepository.findOneBy({ id: userId })
+            const relatedUser = await this.userRepository.findOneByOrFail({ id: userId })
             return await this.contactRepository.findBy({
                 user: relatedUser
             })
         } catch (error) {
-            throw new Error(`Specified user {id: ${userId}} does not exist`)
+            throw new NotFoundException(`Specified user {id: ${userId}} does not exist`)
         }
     }
 
@@ -68,12 +62,17 @@ export class ContactService {
 
             return await this.contactRepository.save(contactToUpdate)
         } catch (error) {
-            throw new Error(`Specified contact {id: ${contactId}} was not found`)
+            throw new NotFoundException(`Specified contact {id: ${contactId}} was not found`)
         }
     }
 
     async deleteContact(contactId: number): Promise<any> {
-        return await this.contactRepository.delete(contactId)
+        try {
+            await this.contactRepository.findOneByOrFail({ id: contactId })
+            return await this.contactRepository.delete(contactId)
+        } catch (error) {
+            throw new NotFoundException(`Specified contact {id: ${contactId}} was not found`)
+        }
     }
 
 

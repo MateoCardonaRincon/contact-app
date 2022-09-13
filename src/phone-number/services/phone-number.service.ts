@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { throwIfEmpty } from 'rxjs';
 import { Contact } from 'src/contact/entities/contact.entity';
@@ -17,26 +17,30 @@ export class PhoneNumberService {
     ) { }
 
     async createPhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
-        const relatedContact = await this.contactRepository.findOneBy({ id: phoneNumberDto.contact.id })
+        try {
+            await this.contactRepository.findOneBy({ id: phoneNumberDto.contact.id })
 
-        if (!relatedContact) {
-            throw new Error(`Specified contact {id: ${phoneNumberDto.contact.id}} does not exist`)
+            const createdPhoneNumber = this.phoneNumberRepository.create(phoneNumberDto)
+
+            return await this.phoneNumberRepository.save(createdPhoneNumber)
+        } catch (error) {
+            throw new NotAcceptableException(`Specified contact {id: ${phoneNumberDto.contact.id}} does not exist`)
         }
-
-        const createdPhoneNumber = this.phoneNumberRepository.create(phoneNumberDto)
-
-        return await this.phoneNumberRepository.save(createdPhoneNumber)
     }
 
     async getAll(): Promise<PhoneNumber[]> {
-        return await this.phoneNumberRepository.find()
+        try {
+            return await this.phoneNumberRepository.find()
+        } catch (error) {
+            throw new InternalServerErrorException(error)
+        }
     }
 
     async getPhoneNumberById(phoneNumberId: number): Promise<PhoneNumber> {
         try {
             return await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
         } catch (error) {
-            throw new Error(`Specified phone number {id: ${phoneNumberId}} does not exist`)
+            throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} does not exist`)
         }
     }
 
@@ -47,23 +51,29 @@ export class PhoneNumberService {
                 contact: relatedContact
             })
         } catch (error) {
-            throw new Error(`Specified contact {id: ${contactId}} does not exist`)
+            throw new NotFoundException(`Specified contact {id: ${contactId}} does not exist`)
         }
     }
 
     async updatePhoneNumber(phoneNumberId: number, phoneNumberDto: UpdatePhoneNumberDto): Promise<PhoneNumber> {
-        const phoneNumberToUpdate = await this.phoneNumberRepository.findOneBy({ id: phoneNumberId })
+        try {
+            const phoneNumberToUpdate = await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
 
-        if (!phoneNumberToUpdate) {
-            throw new Error(`Specified phone number {id: ${phoneNumberId}} was not found`)
+            this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
+
+            return await this.phoneNumberRepository.save(phoneNumberToUpdate)
+        } catch (error) {
+            throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} was not found`)
         }
-
-        this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
-
-        return await this.phoneNumberRepository.save(phoneNumberToUpdate)
     }
 
     async deletePhoneNumber(phoneNumberId: number): Promise<any> {
-        return await this.phoneNumberRepository.delete(phoneNumberId)
+        try {
+            await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
+            return await this.phoneNumberRepository.delete(phoneNumberId)
+
+        } catch (error) {
+            throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} was not found`)
+        }
     }
 }
