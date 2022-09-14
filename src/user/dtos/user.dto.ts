@@ -13,7 +13,7 @@ export class UserDto {
     @MinLength(8, {
         message: 'Password is too short. At least $constraint1 characters are required.'
     })
-    @MaxLength(80, {
+    @MaxLength(50, {
         message: 'Password is too long. Maximal length is $constraint1 characters.'
     })
     password: string;

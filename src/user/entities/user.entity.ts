@@ -3,13 +3,13 @@ import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "t
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-    @Column({ type: "varchar", unique: true })
+    @Column({ type: "varchar", unique: true, length: 80 })
     username: string;
 
-    @Column({ type: "varchar" })
+    @Column({ type: "varchar", length: 50 })
     password: string;
 
     @OneToMany(() => Contact, contact => contact.user, { cascade: ["remove"], eager: true })

@@ -1,6 +1,6 @@
-import { Body, Controller, Delete, Get, HttpStatus, Param, ParseIntPipe, Post, Put, Res } from '@nestjs/common';
-import { ContactDto, UpdateContactDto } from '../dto/contact-dto';
-import { ContactService } from '../services/contact.service';
+import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { ContactDto, UpdateContactDto } from './dtos';
+import { ContactService } from './contact.service';
 
 @Controller('contact')
 export class ContactController {
@@ -18,23 +18,23 @@ export class ContactController {
     }
 
     @Get('get/:id')
-    async getContactById(@Param('id', ParseIntPipe) contactId: number) {
+    async getContactById(@Param('id') contactId: string) {
         return await this.contactService.getContactById(contactId)
     }
 
 
     @Get('get/by-user/:userId')
-    async getContactsByUserId(@Param('userId', ParseIntPipe) userId: number) {
+    async getContactsByUserId(@Param('userId') userId: string) {
         return await this.contactService.getContactsByUserId(userId)
     }
 
     @Put('update/:id')
-    async updateContact(@Param('id', ParseIntPipe) id: number, @Body() contactDto: UpdateContactDto) {
-        return await this.contactService.updateContact(id, contactDto)
+    async updateContact(@Param('id') contactId: string, @Body() contactDto: UpdateContactDto) {
+        return await this.contactService.updateContact(contactId, contactDto)
     }
 
     @Delete('delete/:id')
-    async deleteContact(@Param('id', ParseIntPipe) contactId: number) {
+    async deleteContact(@Param('id') contactId: string) {
         return await this.contactService.deleteContact(contactId)
     }
 

@@ -1,15 +1,20 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException, UnauthorizedException, UseFilters } from '@nestjs/common';
+import {
+    Injectable,
+    InternalServerErrorException,
+    NotAcceptableException,
+    NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { compareSync, hashSync } from 'bcrypt';
+import { hashSync } from 'bcrypt';
 import { Repository } from 'typeorm';
-import { UpdateUserDto, UserDto } from '../dtos';
-import { User } from '../entities/user.entity';
+import { UpdateUserDto, UserDto } from './dtos';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
     constructor(
         @InjectRepository(User)
-        private userRepository: Repository<User>,
+        private userRepository: Repository<User>
     ) { }
 
     async createUser(userDto: UserDto): Promise<User> {
@@ -24,26 +29,6 @@ export class UserService {
         }
     }
 
-    async loginUser(userDto: UserDto) {
-
-        const { password, username } = userDto
-
-        const user = await this.userRepository.findOne({
-            where: { username }
-        },)
-
-        if (!user) {
-            throw new UnauthorizedException("Not valid credentials (username)")
-        }
-
-        if (!compareSync(password, user.password)) {
-            throw new UnauthorizedException("Not valid credentials (password)")
-        }
-
-        return user
-
-    }
-
     async getAll(): Promise<User[]> {
         try {
             return await this.userRepository.find()
@@ -52,7 +37,7 @@ export class UserService {
         }
     }
 
-    async getUserById(userId: number): Promise<User> {
+    async getUserById(userId: string): Promise<User> {
         try {
             return await this.userRepository.findOneByOrFail({ id: userId })
         } catch (error) {
@@ -60,7 +45,7 @@ export class UserService {
         }
     }
 
-    async updateUser(userId: number, userDto: UpdateUserDto): Promise<User> {
+    async updateUser(userId: string, userDto: UpdateUserDto): Promise<User> {
         const userToUpdate = await this.userRepository.findOneBy({ id: userId })
 
         if (!userToUpdate) {
@@ -74,7 +59,7 @@ export class UserService {
         return await this.userRepository.save(userToUpdate)
     }
 
-    async deleteUser(userId: number): Promise<any> {
+    async deleteUser(userId: string): Promise<any> {
         try {
             await this.userRepository.findOneByOrFail({ id: userId })
             return await this.userRepository.delete(userId)
@@ -82,4 +67,5 @@ export class UserService {
             throw new NotFoundException(`Specified user {id: ${userId}} was not found`)
         }
     }
+
 }

@@ -3,10 +3,10 @@ import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class PhoneNumber {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-    @Column({ type: "varchar"})
+    @Column({ type: "varchar", length: 20 })
     phoneNumber: string;
 
     @ManyToOne(() => Contact, (contact) => contact.id, { onDelete: 'CASCADE' })

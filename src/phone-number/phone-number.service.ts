@@ -1,10 +1,9 @@
 import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { throwIfEmpty } from 'rxjs';
 import { Contact } from 'src/contact/entities/contact.entity';
 import { Repository } from 'typeorm';
-import { PhoneNumberDto, UpdatePhoneNumberDto } from '../dto/phone-number-dto';
-import { PhoneNumber } from '../entities/phone-number.entity';
+import { PhoneNumberDto, UpdatePhoneNumberDto } from './dtos';
+import { PhoneNumber } from './entities/phone-number.entity';
 
 @Injectable()
 export class PhoneNumberService {
@@ -18,8 +17,6 @@ export class PhoneNumberService {
 
     async createPhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
         try {
-            delete phoneNumberDto.id
-
             await this.contactRepository.findOneByOrFail({ id: phoneNumberDto.contact.id })
 
             const createdPhoneNumber = this.phoneNumberRepository.create(phoneNumberDto)
@@ -38,7 +35,7 @@ export class PhoneNumberService {
         }
     }
 
-    async getPhoneNumberById(phoneNumberId: number): Promise<PhoneNumber> {
+    async getPhoneNumberById(phoneNumberId: string): Promise<PhoneNumber> {
         try {
             return await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
         } catch (error) {
@@ -46,7 +43,7 @@ export class PhoneNumberService {
         }
     }
 
-    async getAllByContactId(contactId: number): Promise<PhoneNumber[]> {
+    async getAllByContactId(contactId: string): Promise<PhoneNumber[]> {
         try {
             const relatedContact = await this.contactRepository.findOneByOrFail({ id: contactId })
             return await this.phoneNumberRepository.findBy({
@@ -57,7 +54,7 @@ export class PhoneNumberService {
         }
     }
 
-    async updatePhoneNumber(phoneNumberId: number, phoneNumberDto: UpdatePhoneNumberDto): Promise<PhoneNumber> {
+    async updatePhoneNumber(phoneNumberId: string, phoneNumberDto: UpdatePhoneNumberDto): Promise<PhoneNumber> {
         delete phoneNumberDto.contact
 
         const phoneNumberToUpdate = await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
@@ -66,18 +63,12 @@ export class PhoneNumberService {
             throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} was not found`)
         }
 
-        if (phoneNumberDto.id && phoneNumberDto.id !== phoneNumberId) {
-            throw new BadRequestException(
-                `The phone number id sent through the request body must match with the phone number id sent through the request path.`
-            )
-        }
-
         this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
 
         return await this.phoneNumberRepository.save(phoneNumberToUpdate)
     }
 
-    async deletePhoneNumber(phoneNumberId: number): Promise<any> {
+    async deletePhoneNumber(phoneNumberId: string): Promise<any> {
         try {
             await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
             return await this.phoneNumberRepository.delete(phoneNumberId)

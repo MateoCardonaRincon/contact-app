@@ -4,13 +4,13 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColum
 
 @Entity()
 export class Contact {
-    @PrimaryGeneratedColumn()
-    id: number;
+    @PrimaryGeneratedColumn('uuid')
+    id: string;
 
-    @Column({ type: "varchar" })
+    @Column({ type: "varchar", length: 80 })
     name: string;
 
-    @Column({ type: "varchar", nullable: true })
+    @Column({ type: "varchar", nullable: true, length: 80 })
     lastname: string;
 
     @Column()

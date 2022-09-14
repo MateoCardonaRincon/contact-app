@@ -1,4 +1,3 @@
-import { PartialType } from '@nestjs/mapped-types'
 import {
     IsBoolean,
     IsNotEmpty,
@@ -9,15 +8,13 @@ import {
 
 export class ContactDto {
 
-    id?: number;
-
     @IsNotEmpty({
         message: 'Related user must be specified.'
     })
     @IsObject({
-        message: "'user' property must be an object of the type {id : number}"
+        message: "'user' property must be an object of the type {id : 'uuid'}"
     })
-    user: { id: number };
+    user: { id: string };
 
     @IsNotEmpty({
         message: "'name' property is required."
@@ -38,5 +35,3 @@ export class ContactDto {
     })
     status: boolean;
 }
-
-export class UpdateContactDto extends PartialType(ContactDto) { }
