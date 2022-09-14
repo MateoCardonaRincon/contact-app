@@ -1,7 +1,9 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { PhoneNumberDto, UpdatePhoneNumberDto } from './dtos';
 import { PhoneNumberService } from './phone-number.service';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('phone-number')
 export class PhoneNumberController {
 

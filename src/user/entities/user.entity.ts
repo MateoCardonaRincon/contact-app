@@ -9,7 +9,7 @@ export class User {
     @Column({ type: "varchar", unique: true, length: 80 })
     username: string;
 
-    @Column({ type: "varchar", length: 50 })
+    @Column({ type: "varchar", length: 80 })
     password: string;
 
     @OneToMany(() => Contact, contact => contact.user, { cascade: ["remove"], eager: true })

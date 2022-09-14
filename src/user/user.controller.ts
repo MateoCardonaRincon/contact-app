@@ -1,20 +1,15 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, UseGuards } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Param, Put, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { UpdateUserDto, UserDto } from './dtos';
+import { UpdateUserDto } from './dtos';
 import { UserService } from './user.service';
 
+@UseGuards(AuthGuard('jwt'))
 @Controller('user')
 export class UserController {
 
     constructor(private readonly userService: UserService) { }
 
-    @Post('create')
-    async createUser(@Body() userDto: UserDto) {
-        return await this.userService.createUser(userDto)
-    }
-
     @Get('all')
-    @UseGuards(AuthGuard('jwt'))
     async getAllUsers() {
         return await this.userService.getAll()
     }
