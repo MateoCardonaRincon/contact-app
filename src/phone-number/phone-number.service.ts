@@ -18,15 +18,15 @@ export class PhoneNumberService {
 
     async createPhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
         try {
-            const relatedContact = await this.contactRepository.manager.findOneByOrFail(Contact, new ObjectID(phoneNumberDto.contact.id))
+            await this.contactRepository.manager.findOneByOrFail(Contact, new ObjectID(phoneNumberDto.contactId))
 
-            phoneNumberDto.contact = relatedContact
+            phoneNumberDto.contactId = new ObjectID(phoneNumberDto.contactId)
 
             const createdPhoneNumber = this.phoneNumberRepository.create(phoneNumberDto)
 
             return await this.phoneNumberRepository.save(createdPhoneNumber)
         } catch (error) {
-            throw new NotAcceptableException(`Specified contact {id: ${phoneNumberDto.contact.id}} does not exist`)
+            throw new NotAcceptableException(`Specified contact {id: ${phoneNumberDto.contactId}} does not exist`)
         }
     }
 
@@ -48,33 +48,34 @@ export class PhoneNumberService {
 
     async getAllByContactId(contactId: string): Promise<PhoneNumber[]> {
         try {
-            const relatedContact = await this.contactRepository.findOneByOrFail(new ObjectID(contactId))
+            await this.contactRepository.findOneByOrFail(new ObjectID(contactId))
 
-            return await this.phoneNumberRepository.manager.findBy(PhoneNumber, { contact: relatedContact })
+            return await this.phoneNumberRepository.manager.findBy(PhoneNumber, { contactId: new ObjectID(contactId) })
         } catch (error) {
             throw new NotFoundException(`Specified contact {id: ${contactId}} does not exist`)
         }
     }
 
     async updatePhoneNumber(phoneNumberId: string, phoneNumberDto: UpdatePhoneNumberDto): Promise<PhoneNumber> {
-        delete phoneNumberDto.contact
+        try {
+            delete phoneNumberDto.contactId
 
-        const phoneNumberToUpdate = await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
+            const phoneNumberToUpdate = await this.phoneNumberRepository.findOneByOrFail(new ObjectID(phoneNumberId))
 
-        if (!phoneNumberToUpdate) {
+            this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
+
+            return await this.phoneNumberRepository.save(phoneNumberToUpdate)
+
+        } catch (error) {
             throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} was not found`)
         }
-
-        this.phoneNumberRepository.merge(phoneNumberToUpdate, phoneNumberDto)
-
-        return await this.phoneNumberRepository.save(phoneNumberToUpdate)
     }
 
     async deletePhoneNumber(phoneNumberId: string): Promise<any> {
         try {
             await this.phoneNumberRepository.findOneByOrFail(new ObjectID(phoneNumberId))
-            return await this.phoneNumberRepository.delete(phoneNumberId)
 
+            return await this.phoneNumberRepository.delete(phoneNumberId)
         } catch (error) {
             throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} was not found`)
         }

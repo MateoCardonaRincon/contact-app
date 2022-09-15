@@ -1,5 +1,4 @@
-import { Contact } from "src/contact/entities/contact.entity";
-import { Column, Entity, ManyToOne, ObjectIdColumn } from "typeorm";
+import { Column, Entity, ObjectIdColumn } from "typeorm";
 import { ObjectID } from 'mongodb';
 @Entity()
 export class PhoneNumber {
@@ -9,7 +8,7 @@ export class PhoneNumber {
     @Column({ length: 20 })
     phoneNumber: string;
 
-    @Column(() => Contact)
-    contact: Contact
+    @Column()
+    contactId: ObjectID;
 
 }

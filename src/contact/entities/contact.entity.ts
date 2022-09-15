@@ -1,5 +1,3 @@
-import { PhoneNumber } from './../../phone-number/entities/phone-number.entity';
-import { User } from "src/user/entities/user.entity";
 import { Column, Entity, ObjectIdColumn } from "typeorm";
 import { ObjectID } from 'mongodb';
 
@@ -17,6 +15,6 @@ export class Contact {
     @Column()
     status: boolean;
 
-    @Column((type) => User)
-    user: User
+    @Column()
+    userId: ObjectID;
 }

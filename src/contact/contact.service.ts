@@ -1,4 +1,4 @@
-import { BadRequestException, Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotAcceptableException, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -19,15 +19,15 @@ export class ContactService {
 
     async createContact(contactDto: ContactDto): Promise<Contact> {
         try {
-            const relatedUser = await this.userRepository.manager.findOneByOrFail(User, new ObjectID(contactDto.user.id))
+            await this.userRepository.manager.findOneByOrFail(User, new ObjectID(contactDto.userId))
 
-            contactDto.user = relatedUser
+            contactDto.userId = new ObjectID(contactDto.userId)
 
             const createdContact = this.contactRepository.create(contactDto)
 
             return await this.contactRepository.save(createdContact)
         } catch (error) {
-            throw new NotAcceptableException(`Specified user {id: ${contactDto.user.id}} does not exist`)
+            throw new NotAcceptableException(`Specified user {id: ${contactDto.userId}} does not exist`)
         }
     }
 
@@ -49,9 +49,9 @@ export class ContactService {
 
     async getContactsByUserId(userId: string): Promise<Contact[]> {
         try {
-            const relatedUser = await this.userRepository.findOneByOrFail(new ObjectID(userId))
+            await this.userRepository.findOneByOrFail(new ObjectID(userId))
 
-            return await this.contactRepository.manager.findBy(Contact, { user: relatedUser })
+            return await this.contactRepository.manager.findBy(Contact, { userId: new ObjectID(userId) })
         } catch (error) {
             throw new NotFoundException(`Specified user {id: ${userId}} does not exist`)
         }
@@ -59,19 +59,13 @@ export class ContactService {
 
     async updateContact(contactId: string, contactDto: UpdateContactDto): Promise<Contact> {
         try {
-            delete contactDto.user
+            delete contactDto.userId
 
             const contactToUpdate = await this.contactRepository.findOneByOrFail(new ObjectID(contactId))
 
-            console.log({ contactToUpdate })
-
             this.contactRepository.merge(contactToUpdate, contactDto)
 
-            console.log({ contactToUpdate })
-
-            const updt = await this.contactRepository.save(contactToUpdate)
-
-            return updt
+            return await this.contactRepository.save(contactToUpdate)
         } catch (error) {
             throw new NotFoundException(`Specified contact {id: ${contactId}} was not found`)
         }
