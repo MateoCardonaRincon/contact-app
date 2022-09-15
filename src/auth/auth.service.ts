@@ -21,7 +21,13 @@ export class AuthService {
     try {
       const { password, username } = userDto
 
-      const createdUser = this.userRepository.create({ username, password: hashSync(password, 10) });
+      const userExists = await this.userRepository.findOneBy({ username })
+
+      if (userExists) {
+        throw new NotAcceptableException("Username already exist. Please choose another to register.")
+      }
+
+      const createdUser = this.userRepository.create({ password: hashSync(password, 10), username });
 
       const user = await this.userRepository.save(createdUser)
 

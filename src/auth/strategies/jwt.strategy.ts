@@ -7,6 +7,7 @@ import { User } from 'src/user/entities/user.entity'
 import { Repository } from 'typeorm'
 import { JwtPayload } from '../interfaces/jwt-payload.interface'
 import { ConfigService } from '@nestjs/config'
+import { ObjectID } from 'mongodb';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
@@ -26,10 +27,10 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
 
         const { id } = payload
 
-        const user = await this.userRepository.findOneBy({ id })
+        const user = await this.userRepository.findOne(new ObjectID(id))
 
         if (!user) {
-            throw new UnauthorizedException('Not valid token')
+            throw new UnauthorizedException('The token or the user credentials are invalid.')
         }
 
         return user

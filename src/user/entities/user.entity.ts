@@ -1,18 +1,14 @@
-import { Contact } from "src/contact/entities/contact.entity";
-import { Column, Entity, JoinColumn, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, Index, ObjectIdColumn, Unique } from "typeorm";
+import { ObjectID } from 'mongodb';
 
 @Entity()
 export class User {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+    @ObjectIdColumn()
+    id: ObjectID;
 
-    @Column({ type: "varchar", unique: true, length: 80 })
+    @Column({ length: 80 })
     username: string;
 
-    @Column({ type: "varchar", length: 80 })
+    @Column({ length: 80 })
     password: string;
-
-    @OneToMany(() => Contact, contact => contact.user, { cascade: ["remove"], eager: true })
-    @JoinColumn()
-    contacts: Contact[];
 }

@@ -1,15 +1,15 @@
 import { Contact } from "src/contact/entities/contact.entity";
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from "typeorm";
-
+import { Column, Entity, ManyToOne, ObjectIdColumn } from "typeorm";
+import { ObjectID } from 'mongodb';
 @Entity()
 export class PhoneNumber {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+    @ObjectIdColumn()
+    id: ObjectID;
 
-    @Column({ type: "varchar", length: 20 })
+    @Column({ length: 20 })
     phoneNumber: string;
 
-    @ManyToOne(() => Contact, (contact) => contact.id, { onDelete: 'CASCADE' })
+    @Column(() => Contact)
     contact: Contact
 
 }

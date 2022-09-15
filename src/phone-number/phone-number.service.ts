@@ -4,6 +4,7 @@ import { Contact } from 'src/contact/entities/contact.entity';
 import { Repository } from 'typeorm';
 import { PhoneNumberDto, UpdatePhoneNumberDto } from './dtos';
 import { PhoneNumber } from './entities/phone-number.entity';
+import { ObjectID } from 'mongodb';
 
 @Injectable()
 export class PhoneNumberService {
@@ -17,7 +18,9 @@ export class PhoneNumberService {
 
     async createPhoneNumber(phoneNumberDto: PhoneNumberDto): Promise<PhoneNumber> {
         try {
-            await this.contactRepository.findOneByOrFail({ id: phoneNumberDto.contact.id })
+            const relatedContact = await this.contactRepository.manager.findOneByOrFail(Contact, new ObjectID(phoneNumberDto.contact.id))
+
+            phoneNumberDto.contact = relatedContact
 
             const createdPhoneNumber = this.phoneNumberRepository.create(phoneNumberDto)
 
@@ -37,7 +40,7 @@ export class PhoneNumberService {
 
     async getPhoneNumberById(phoneNumberId: string): Promise<PhoneNumber> {
         try {
-            return await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
+            return await this.phoneNumberRepository.findOneByOrFail(new ObjectID(phoneNumberId))
         } catch (error) {
             throw new NotFoundException(`Specified phone number {id: ${phoneNumberId}} does not exist`)
         }
@@ -45,10 +48,9 @@ export class PhoneNumberService {
 
     async getAllByContactId(contactId: string): Promise<PhoneNumber[]> {
         try {
-            const relatedContact = await this.contactRepository.findOneByOrFail({ id: contactId })
-            return await this.phoneNumberRepository.findBy({
-                contact: relatedContact
-            })
+            const relatedContact = await this.contactRepository.findOneByOrFail(new ObjectID(contactId))
+
+            return await this.phoneNumberRepository.manager.findBy(PhoneNumber, { contact: relatedContact })
         } catch (error) {
             throw new NotFoundException(`Specified contact {id: ${contactId}} does not exist`)
         }
@@ -70,7 +72,7 @@ export class PhoneNumberService {
 
     async deletePhoneNumber(phoneNumberId: string): Promise<any> {
         try {
-            await this.phoneNumberRepository.findOneByOrFail({ id: phoneNumberId })
+            await this.phoneNumberRepository.findOneByOrFail(new ObjectID(phoneNumberId))
             return await this.phoneNumberRepository.delete(phoneNumberId)
 
         } catch (error) {

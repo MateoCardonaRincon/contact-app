@@ -1,4 +1,5 @@
-import { IsNotEmpty, Length, MaxLength, MinLength } from "class-validator";
+import { IsNotEmpty, IsOptional, Length, MaxLength, MinLength } from "class-validator";
+import { Contact } from "src/contact/entities/contact.entity";
 
 export class UserDto {
 

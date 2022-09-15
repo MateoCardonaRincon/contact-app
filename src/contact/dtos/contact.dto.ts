@@ -5,6 +5,7 @@ import {
     IsOptional,
     Length
 } from 'class-validator';
+import { User } from 'src/user/entities/user.entity';
 
 export class ContactDto {
 
@@ -14,7 +15,7 @@ export class ContactDto {
     @IsObject({
         message: "'user' property must be an object of the type {id : 'uuid'}"
     })
-    user: { id: string };
+    user: User;
 
     @IsNotEmpty({
         message: "'name' property is required."
